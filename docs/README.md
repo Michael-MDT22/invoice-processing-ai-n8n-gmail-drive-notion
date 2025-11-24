@@ -11,7 +11,7 @@ Este diretório contém materiais de apoio e documentação visual do fluxo, inc
 
 Abaixo está o print oficial do fluxo utilizado no projeto:
 
-![Workflow do n8n](./print.png)
+![Workflow do n8n](./workflow.png)
 
 
 
