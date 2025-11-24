@@ -139,8 +139,6 @@ Deletar arquivo no Drive
       └── (caso use algum JS custom)
 
 
-📌 Você pode colocar o print do seu fluxograma dentro da pasta /docs.
-
 🔑 Variáveis de Ambiente Necessárias
 
 O fluxo utiliza credenciais configuradas no n8n, como:
