@@ -1,0 +1,726 @@
+{
+  "name": "AI Invoice Processing",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "q": "has:attachment filename:pdf"
+        },
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -32,
+        48
+      ],
+      "id": "7a25b93f-5102-48e3-ad67-0a425a483abe",
+      "name": "Gmail Trigger",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "mpvTOIXJUrnXcZXS",
+          "name": "Gmail account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "690307bb-5a73-4e88-b889-be4dc1301276",
+              "name": "anexos",
+              "value": "={{ $('Gmail Trigger').item.binary.keys() }}",
+              "type": "array"
+            },
+            {
+              "id": "0c241e5b-f3e6-4b3e-aa90-cad60ddcabc2",
+              "name": "id_menssage",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        304,
+        -176
+      ],
+      "id": "0e0bd058-7007-489b-94bc-101af090d082",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "anexos",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        512,
+        -176
+      ],
+      "id": "5136708d-6a70-443e-9b00-58e14bf78d8f",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "advanced": true,
+        "mergeByFields": {
+          "values": [
+            {
+              "field1": "id",
+              "field2": "id"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        816,
+        32
+      ],
+      "id": "f0fcf67a-b1b6-4abd-a24a-e78838653bed",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "inputDataFieldName": "={{ $json.anexos }}",
+        "name": "={{ $('Gmail Trigger').item.json.headers.subject }}_{{ $json.anexos }}",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "1-k1ATim961PTpORRb7wxPZeBG0k8E0ul",
+          "mode": "list",
+          "cachedResultName": "Faturas",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1-k1ATim961PTpORRb7wxPZeBG0k8E0ul"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1024,
+        32
+      ],
+      "id": "d8a756a9-09b3-4316-8a30-eba6437aa81d",
+      "name": "Upload file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "cRNttwwa3wOhD1Sc",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1232,
+        32
+      ],
+      "id": "529d8e41-d7fe-4f13-a23b-9f4a24b42ae5",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "cRNttwwa3wOhD1Sc",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        1456,
+        32
+      ],
+      "id": "77176e7f-6c44-4964-8501-5d476f3bab53",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2ef727eb-aad2-4ae8-b6f7-2a9b8dab9a6a",
+              "leftValue": "={{ $json.output }}",
+              "rightValue": "sim",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2240,
+        32
+      ],
+      "id": "dbd5f8da-89b3-4ea1-a97d-f1bf10b9d5f0",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "operation": "deleteFile",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Upload file').item.json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2432,
+        256
+      ],
+      "id": "64f3c5b5-3ea9-40a4-88d1-48f2e57a86e8",
+      "name": "Delete a file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "cRNttwwa3wOhD1Sc",
+          "name": "Google Drive account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"invoice_name\": \"Invoice ABC-123\",\n  \"company_name\": \"Acme Corp\",\n  \"total_invoice_amount\": 1000,\n  \"line_items\": [\n    { \n      \"description\": \"Consulting services\", \"amount\": 100 \n    },\n    { \n      \"description\": \"Software license\", \"amount\": 800 \n    },\n    { \n      \"description\": \"Sales tax\", \"amount\": 100 \n    }\n  ]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        3056,
+        208
+      ],
+      "id": "d4832398-acd1-469a-be80-ffbf2f802897",
+      "name": "Structured Output Parser2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "fc582f5c-eacf-44aa-ad1f-017b2c9947aa",
+              "name": "itens da linha",
+              "value": "={{ $('Extrair Dados da Fatura').item.json.output.line_items }}",
+              "type": "array"
+            },
+            {
+              "id": "c92a8c79-6440-41b9-984c-c0959df4117c",
+              "name": "Assunto ",
+              "value": "={{ $json.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3776,
+        16
+      ],
+      "id": "bd525ed1-2a98-4600-8753-19d6b4bde60e",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "['itens da linha']",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        4032,
+        16
+      ],
+      "id": "54f1ab8e-075f-4ac6-9e1c-36763cced03f",
+      "name": "Split Out4"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        4288,
+        16
+      ],
+      "id": "2b43238a-93ec-4437-9cdd-647e2a40da48",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        4752,
+        -96
+      ],
+      "id": "c3398e19-0ed9-4c54-81ab-fe14ec46b3bf",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=baseado no texto defina se ele é uma fatura:  {{ $json.text }}\nse sim restorne um \"sim\" se não retorne um \"não\". responda somente sim ou nao.",
+        "options": {
+          "systemMessage": "Analise este texto e identifique se é uma FATURA/CONTA DE COBRANÇA.\n\nCARACTERÍSTICAS DE FATURA:\n- Contém valores monetários\n- Tem data de vencimento\n- Mostra itens/serviços cobrados\n- Tem nome do fornecedor e cliente\n- É um documento de cobrança formal\n\nSe for UMA FATURA, responda \"sim\".\nSe for qualquer outro documento (contrato, comunicado, propaganda, etc.), responda \"não\".\n\nResponda APENAS com \"sim\" ou \"não\", sem explicações.\n\nTexto: {{ $json.text }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        32
+      ],
+      "id": "89634ef4-4153-4ca0-bc8a-8f25d5bc9c04",
+      "name": "Verificar se é Fatura"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You will receive raw text extracted from PDF invoices. Your task is to extract the following details and return them strictly as a JSON object — without any explanation, commentary, or formatting outside the JSON. Required fields: - invoice_name: the identifier or title of the invoice - company_name: the name of the business that issued the invoice - total_invoice_amount: the grand total shown on the invoice - line_items: an array of items, each with: • description – the item or service label • amount – the cost for that item Guidelines: - If any detail is missing or unclear, use null. - Use the most specific line-item labels available. - Ensure the sum of line-item amounts matches the total_invoice_amount (minor rounding differences are acceptable). - Respond with only the JSON object — no extra text. Text to process: {{ $('Extract from File').item.json.text }}",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        2912,
+        16
+      ],
+      "id": "0f077d94-32cb-4fd3-a17a-527fb1f3e5c0",
+      "name": "Extrair Dados da Fatura"
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "285477e3-944e-81c8-ac59-fb4616719681",
+          "mode": "list",
+          "cachedResultName": "Invoice Tracking Database",
+          "cachedResultUrl": "https://www.notion.so/285477e3944e81c8ac59fb4616719681"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Subject|title",
+              "title": "={{ $('Gmail Trigger').item.json.headers.subject }}"
+            },
+            {
+              "key": "Email|rich_text",
+              "textContent": "={{ $('Gmail Trigger').item.json.headers.from }}"
+            },
+            {
+              "key": "Invoice URL|url",
+              "urlValue": "={{ $('Upload file').item.json.webViewLink }}"
+            },
+            {
+              "key": "Amount|number",
+              "numberValue": "={{ $json.output.total_invoice_amount }}"
+            },
+            {
+              "key": "Empresa|rich_text",
+              "textContent": "={{ $json.output.company_name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        3456,
+        16
+      ],
+      "id": "ef39f7dc-2ae4-48ae-a8aa-889634da1f02",
+      "name": "Salvar Fatura no Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "zo2XqmOzBypi25cb",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "databasePage",
+        "databaseId": {
+          "__rl": true,
+          "value": "285477e3-944e-8120-8732-c2b74f45f801",
+          "mode": "list",
+          "cachedResultName": "Invoice Line Items",
+          "cachedResultUrl": "https://www.notion.so/285477e3944e81208732c2b74f45f801"
+        },
+        "propertiesUi": {
+          "propertyValues": [
+            {
+              "key": "Invoice Subject|title",
+              "title": "={{ $('Gmail Trigger').item.json.headers.subject }}"
+            },
+            {
+              "key": "Invoice Item|rich_text",
+              "textContent": "={{ $json.description }}"
+            },
+            {
+              "key": "Amount|number",
+              "numberValue": "={{ $json.amount }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.notion",
+      "typeVersion": 2.2,
+      "position": [
+        4512,
+        112
+      ],
+      "id": "858a8b25-5b0d-40df-ba5e-876f3191f1ce",
+      "name": "Salvar Itens no Notion",
+      "credentials": {
+        "notionApi": {
+          "id": "zo2XqmOzBypi25cb",
+          "name": "Notion account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-oss-20b",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        2816,
+        208
+      ],
+      "id": "ddc83617-2d12-4a98-acab-92aa14bc8ef5",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "uM4I6gBuKc0shpeQ",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-oss-20b",
+          "mode": "list",
+          "cachedResultName": "openai/gpt-oss-20b"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1824,
+        256
+      ],
+      "id": "540078d7-156f-419a-96b1-acb30948ecbf",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "uM4I6gBuKc0shpeQ",
+          "name": "OpenAi account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Gmail Trigger": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Upload file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload file": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Verificar se é Fatura",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Extrair Dados da Fatura",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Delete a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Extrair Dados da Fatura",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "Split Out4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out4": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Salvar Itens no Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar se é Fatura": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair Dados da Fatura": {
+      "main": [
+        [
+          {
+            "node": "Salvar Fatura no Notion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Fatura no Notion": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Itens no Notion": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extrair Dados da Fatura",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Verificar se é Fatura",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8d642845-e498-4a11-8a74-6cfe1175db4a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "1d7a8294d51b7b58c8f3978f77e94e4a191d1c5554d101135063ca67124da639"
+  },
+  "id": "8YprckkuozguoPD4",
+  "tags": []
+}
