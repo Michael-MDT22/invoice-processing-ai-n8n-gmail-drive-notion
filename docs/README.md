@@ -9,4 +9,9 @@ Este diretório contém materiais de apoio e documentação visual do fluxo, inc
 
 ## 📸 Estrutura do Workflow no n8n
 
+Abaixo está o print oficial do fluxo utilizado no projeto:
+
+![Workflow do n8n](./print.png)
+
+
 
